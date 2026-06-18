@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mine New Block</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+        .form-container { background: white; padding: 20px; border-radius: 8px; max-width: 400px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
+        label { font-weight: bold; margin-top: 10px; display: block; }
+        input[type="text"] { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { padding: 10px 15px; margin-top: 15px; cursor: pointer; background-color: #28a745; color: white; border: none; border-radius: 5px; width: 100%; font-size: 16px; }
+        button:hover { background-color: #218838; }
+        #statusMessage { margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Mine New Transaction Block</h2>
+    <div class="form-container">
+        <label for="TransactionId">Transaction Id:</label>
+        <input type="text" id="TransactionId" placeholder="e.g. TX-101"> 
+
+        <label for="Sender">Sender Name:</label>
+        <input type="text" id="Sender" placeholder="e.g. Ministry of Transport">
+
+        <label for="Reciever">Receiver Name:</label>
+        <input type="text" id="Reciever" placeholder="e.g. Acme Corp">
+
+        <label for="Amount">Transfer Amount (₹):</label>
+        <input type="text" id="Amount" placeholder="e.g. 50000">
+
+        <label for="ProjectId">Project ID:</label>
+        <input type="text" id="ProjectId" placeholder="e.g. HWY-48">
+
+        <label>Transaction Type:</label>
+        <input type="radio" name="TransactionType" value="Online" id="TransactionTypeOnline">
+        <label for="TransactionTypeOnline" style="display:inline; font-weight:normal;">Online</label>
+        
+        <input type="radio" name="TransactionType" value="Cash" id="TransactionTypeCash">
+        <label for="TransactionTypeCash" style="display:inline; font-weight:normal;">Cash</label>
+        <br><br>
+
+        <label for="Metadata">Additional Information:</label>
+        <input type="text" id="Metadata" placeholder="e.g. Concrete supplies">
+        
+        <button onclick="submitTransaction()">Submit to Blockchain</button>
+    </div>
+    
+    <div id="statusMessage"></div>
+
+    <script>
+        async function submitTransaction() {
+            const status = document.getElementById("statusMessage");
+            status.innerHTML = "Mining Block... ⏳";
+
+            let txType = "";
+            if (document.getElementById("TransactionTypeOnline")?.checked) txType = "Online";
+            if (document.getElementById("TransactionTypeCash")?.checked) txType = "Cash";
+
+            // SAFETY CHECK
+            const rawAmount = document.getElementById("Amount").value.trim();
+            if (!rawAmount || isNaN(rawAmount)) {
+                status.innerHTML = "❌ Error: Please enter a valid number for the Amount.";
+                return;
+            }
+
+            // THE JSON PAYLOAD (with reciever spelling matched perfectly)
+            const transactionData = {
+                transactionId: document.getElementById("TransactionId").value.trim(),
+                sender: document.getElementById("Sender").value.trim(),
+                reciever: document.getElementById("Reciever").value.trim(), 
+                amount: parseFloat(rawAmount),
+                projectId: document.getElementById("ProjectId").value.trim(),
+                transactionType: txType,
+                metadata: document.getElementById("Metadata").value.trim()
+            };
+
+            try {
+                const response = await fetch("https://corruption-catcher-api.onrender.com/api/blockchain/mineblock", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(transactionData)
+                });
+
+                if (!response.ok) {
+                    const serverError = await response.text(); 
+                    throw new Error(`Java Error (${response.status}): ${serverError}`);
+                }
+                
+                const data = await response.json();
+                status.innerHTML = "✅ Block Mined Successfully!<br><br>Hash: <span style='font-size: 0.8em; color: gray;'>" + data.hash + "</span>";
+            } catch (error) {
+                status.innerHTML = "❌ " + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

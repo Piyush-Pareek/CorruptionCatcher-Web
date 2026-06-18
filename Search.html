@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Transactions</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+        h3 { margin-bottom: 5px; font-size: 16px; }
+        input[type="text"] { padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 8px 15px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; margin-left: 10px;}
+        button:hover { background-color: #0056b3; }
+        .search-section { background: white; margin-bottom: 15px; padding: 15px; border-radius: 8px; box-shadow: 0px 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; }
+        .search-section h3 { margin: 0 15px 0 0; min-width: 200px; }
+        
+        /* Table Styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; display: none; background: white; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #333; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        #SearchResult { margin-top: 20px; font-weight: bold; font-size: 1.1em; color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Forensic Audit Engine</h1>
+    
+    <div class="search-section">
+        <h3>Search By Project Id:</h3>
+        <input type="text" id="ProjectId" placeholder="Enter Project Id">
+        <button type="button" onclick="SearchbyProjectId()">Find</button>
+    </div>
+
+    <div class="search-section">
+        <h3>Search By Receiver:</h3>
+        <input type="text" id="Receiver" placeholder="Enter Receiver Name">
+        <button type="button" onclick="SearchbyReceiver()">Find</button>
+    </div>
+
+    <div class="search-section">
+        <h3>Search By Sender:</h3>
+        <input type="text" id="Sender" placeholder="Enter Sender Name">
+        <button type="button" onclick="SearchbySender()">Find</button>
+    </div>
+
+    <div class="search-section">
+        <h3>Search By Amount:</h3>
+        <input type="text" id="Amount" placeholder="Enter Exact Amount">
+        <button type="button" onclick="SearchbyAmount()">Find</button>
+    </div>
+
+    <div class="search-section">
+        <h3>Search By Transaction Mode:</h3>
+        <input type="text" id="TransactionMode" placeholder="Cash or Online">
+        <button type="button" onclick="SearchbyType()">Find</button>
+    </div>
+
+    <div class="search-section" style="background-color: #ffe6e6; border-left: 5px solid #ff4d4d;">
+        <h3 style="color: #cc0000;">Scan For Corruption:</h3>
+        <button type="button" onclick="SearchbyFlag()" style="background-color: #cc0000;">Run Flagged Audit</button>
+    </div>
+
+    <h2>Audit Result</h2>
+    <div id="SearchResult">Waiting for query...</div>
+
+    <table id="auditTable">
+        <thead>
+            <tr>
+                <th>Tx ID</th>
+                <th>Sender</th>
+                <th>Receiver</th>
+                <th>Project ID</th>
+                <th>Mode</th>
+                <th>Amount</th>
+                <th>Flagged?</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            </tbody>
+    </table>
+
+    <script>
+        const BASE_URL = "https://corruption-catcher-api.onrender.com/api/blockchain/audit";
+
+        async function fetchAuditData(endpoint, inputName) {
+            const resultArea = document.getElementById("SearchResult");
+            const table = document.getElementById("auditTable");
+            const tableBody = document.getElementById("tableBody");
+
+            resultArea.innerHTML = "Querying Cloud Database... ⏳";
+            table.style.display = "none"; 
+            tableBody.innerHTML = ""; 
+
+            try {
+                const response = await fetch(`${BASE_URL}${endpoint}`);
+                if(!response.ok) throw new Error(`No Transactions Found for the given ${inputName}`);
+                
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    resultArea.innerHTML = "No records found in the ledger.";
+                    return;
+                }
+
+                data.forEach(tx => {
+                    const row = document.createElement("tr");
+                    
+                    // Highlight Flagged Data!
+                    if (tx.isFlagged) {
+                        row.style.color = "#cc0000";
+                        row.style.fontWeight = "bold";
+                        row.style.backgroundColor = "#fff0f0"; 
+                    }
+
+                    row.innerHTML = `
+                        <td>${tx.transactionId || 'N/A'}</td>
+                        <td>${tx.sender || 'N/A'}</td>
+                        <td>${tx.reciever || 'N/A'}</td> 
+                        <td>${tx.projectId || 'N/A'}</td>
+                        <td>${tx.transactionType || 'N/A'}</td>
+                        <td>₹${tx.amount.toLocaleString()}</td>
+                        <td>${tx.isFlagged ? "⚠️ FLAGGED" : "Safe"}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                resultArea.innerHTML = `✅ Successfully retrieved ${data.length} record(s).`;
+                table.style.display = "table"; 
+
+            } catch(error) {
+                resultArea.innerHTML = "❌ Error: " + error.message;
+            }
+        }
+
+        function SearchbySender() {
+            const sender = document.getElementById("Sender").value.trim();
+            if(!sender) return alert("Please enter a sender name");
+            fetchAuditData(`/sender/${sender}`, "sender");
+        }
+
+        function SearchbyReceiver() {
+            const receiver = document.getElementById("Receiver").value.trim();
+            if(!receiver) return alert("Please enter a receiver name");
+            fetchAuditData(`/receiver/${receiver}`, "receiver");
+        }
+
+        function SearchbyAmount() {
+            const amount = document.getElementById("Amount").value.trim();
+            if(!amount) return alert("Please enter a valid amount");
+            fetchAuditData(`/amount/${amount}`, "amount");
+        }
+
+        function SearchbyProjectId() {
+            const projectId = document.getElementById("ProjectId").value.trim();
+            if(!projectId) return alert("Please enter a Valid Project Id");
+            fetchAuditData(`/project/${projectId}`, "project ID");
+        }
+
+        function SearchbyType() {
+            const transactionMode = document.getElementById("TransactionMode").value.trim();
+            if(!transactionMode) return alert("Please enter a valid Mode (Cash or Online)");
+            fetchAuditData(`/mode/${transactionMode}`, "mode");
+        }
+
+        function SearchbyFlag() {
+            fetchAuditData(`/flagged`, "flagged status");
+        }
+    </script>
+</body>
+</html>

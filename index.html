@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CorruptionCatcher Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; }
+        .inner { margin-top: 30px; background: white; padding: 30px; border-radius: 10px; display: inline-block; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Welcome to the Corruption Finder Dashboard</h1>
+        <p>Select an operation below to interact with the blockchain.</p>
+        <div class="inner">
+            <h3>Add New Transactions to the Ledger</h3>
+            <button onclick="window.location.href='addTransaction.html'">Mine Block</button>
+            
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+
+            <h3>Audit the Blockchain Data</h3>
+            <button onclick="window.location.href='Search.html'">Search Ledger</button>
+        </div>
+    </div>
+</body>
+</html>
