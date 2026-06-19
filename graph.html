@@ -26,7 +26,7 @@
     <div id="mynetwork"></div>
 
     <script>
-        // 1. Fetch the raw JSON from your Spring Boot Backend
+       // 1. Fetch the raw JSON from your live Render API
         fetch('https://corruption-catcher-api.onrender.com/api/blockchain/graph')
             .then(response => response.json())
             .then(data => {
@@ -38,13 +38,16 @@
 
                 // 3. The Parser Logic (Translates Neo4j JSON to Vis.js Physics)
                 function processEntity(entity) {
+                    if (!entity || !entity.name) return; // Safety check
+
                     // If we haven't drawn this person/company yet, add them as a Node
                     if (!addedNodes.has(entity.name)) {
                         
                         // --- THE AI UPGRADE ---
                         // Check if Java flagged them as corrupt. If yes, make them RED and massive!
-                        let dotColor = entity.isSuspicious ? '#ff1100' : '#00ccff'; 
-                        let dotSize = entity.isSuspicious ? 40 : 20; 
+                        let isCorrupt = entity.isSuspicious === true; 
+                        let dotColor = isCorrupt ? '#ff1100' : '#00ccff'; 
+                        let dotSize = isCorrupt ? 40 : 20; 
                         
                         nodes.add({ id: entity.name, label: entity.name, shape: 'dot', size: dotSize, color: dotColor });
                         addedNodes.add(entity.name);
