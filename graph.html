@@ -40,7 +40,13 @@
                 function processEntity(entity) {
                     // If we haven't drawn this person/company yet, add them as a Node
                     if (!addedNodes.has(entity.name)) {
-                        nodes.add({ id: entity.name, label: entity.name, shape: 'dot', size: 20, color: '#00ccff' });
+                        
+                        // --- THE AI UPGRADE ---
+                        // Check if Java flagged them as corrupt. If yes, make them RED and massive!
+                        let dotColor = entity.isSuspicious ? '#ff1100' : '#00ccff'; 
+                        let dotSize = entity.isSuspicious ? 40 : 20; 
+                        
+                        nodes.add({ id: entity.name, label: entity.name, shape: 'dot', size: dotSize, color: dotColor });
                         addedNodes.add(entity.name);
                     }
                     
