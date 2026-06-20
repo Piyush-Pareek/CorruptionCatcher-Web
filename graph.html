@@ -41,16 +41,17 @@
                     if (!entity || !entity.name) return; // Safety check
 
                     // If we haven't drawn this person/company yet, add them as a Node
+                   let isCorrupt = (entity.isSuspicious === true || entity.suspicious === true); 
+                    let dotColor = isCorrupt ? '#ff1100' : '#00ccff'; 
+                    let dotSize = isCorrupt ? 40 : 20; 
+
+                    // If we haven't drawn them yet, draw them.
                     if (!addedNodes.has(entity.name)) {
-                        
-                        // --- THE AI UPGRADE ---
-                        // Check if Java flagged them as corrupt. If yes, make them RED and massive!
-                        let isCorrupt = entity.isSuspicious === true; 
-                        let dotColor = isCorrupt ? '#ff1100' : '#00ccff'; 
-                        let dotSize = isCorrupt ? 40 : 20; 
-                        
                         nodes.add({ id: entity.name, label: entity.name, shape: 'dot', size: dotSize, color: dotColor });
                         addedNodes.add(entity.name);
+                    } else if (isCorrupt) {
+                        // THE FIX: If they were already drawn blue earlier, but we just found out they are corrupt, OVERWRITE THEM TO RED!
+                        nodes.update({ id: entity.name, size: dotSize, color: dotColor });
                     }
                     
                     // If they sent money to anyone, draw an arrow (Edge) to the recipient
