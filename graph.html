@@ -43,7 +43,7 @@
                     // If we haven't drawn this person/company yet, add them as a Node
                    let isCorrupt = (entity.isSuspicious === true || entity.suspicious === true); 
                     let dotColor = isCorrupt ? '#ff1100' : '#00ccff'; 
-                    let dotSize = isCorrupt ? 40 : 20; 
+                    let dotSize = isCorrupt ? 25 : 20; 
 
                     // If we haven't drawn them yet, draw them.
                     if (!addedNodes.has(entity.name)) {
